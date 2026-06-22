@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PokerStock — Контент-студия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070f0a; --surface:#0d1711; --surface-2:#111e16; --surface-3:#16271c;
+    --border:#24382c; --border-soft:#1a291f;
+    --text:#e9efe9; --text-2:#8da89a; --text-3:#5f7568;
+    --g1:#5fd96b; --g2:#3dbb4d; --g3:#2f9a3e;
+    --grad:linear-gradient(135deg,#5fd96b 0%,#3dbb4d 55%,#2f9a3e 100%);
+    --radius:16px; --radius-sm:11px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Manrope',system-ui,sans-serif;
+    background:radial-gradient(1100px 600px at 85% -10%, rgba(61,187,77,.10), transparent 60%),
+               radial-gradient(900px 500px at -5% 110%, rgba(40,120,70,.07), transparent 55%), var(--bg);
+    color:var(--text);min-height:100%;-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:18px clamp(16px,4vw,40px);border-bottom:1px solid var(--border-soft);
+    position:sticky;top:0;z-index:20;background:rgba(7,15,10,.72);backdrop-filter:blur(14px)}
+  .brand{display:flex;align-items:center;gap:13px;min-width:0}
+  .mark{width:40px;height:40px;border-radius:11px;flex:none;background:#0c1a11;
+    display:grid;place-items:center;box-shadow:0 6px 22px -8px rgba(61,187,77,.5);border:1px solid #1d3325}
+  .mark svg{width:26px;height:26px;display:block}
+  .brand-txt h1{font-size:15px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .brand-txt p{font-size:11px;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase}
+  .key-btn{display:flex;align-items:center;gap:8px;flex:none;background:var(--surface-2);
+    border:1px solid var(--border);color:var(--text-2);font-family:inherit;font-size:12.5px;
+    font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;transition:.18s}
+  .key-btn:hover{border-color:var(--g3);color:var(--text)}
+  .key-btn .dot{width:7px;height:7px;border-radius:50%;background:#6b7d72;transition:.2s}
+  .key-btn.on .dot{background:#5fd96b;box-shadow:0 0 8px #5fd96b}
+
+  .wrap{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:clamp(16px,2.5vw,30px);
+    padding:clamp(16px,3vw,34px) clamp(16px,4vw,40px);max-width:1340px;margin:0 auto;align-items:start}
+  @media(max-width:880px){.wrap{grid-template-columns:1fr}}
+  .panel{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
+  .preview-col{position:sticky;top:88px}
+  @media(max-width:880px){.preview-col{position:static}}
+
+  .tabs{display:flex;gap:4px;padding:6px;background:var(--surface-2);border-bottom:1px solid var(--border-soft)}
+  .tab{flex:1;text-align:center;font-family:inherit;font-size:13px;font-weight:700;color:var(--text-2);
+    background:transparent;border:none;cursor:pointer;padding:10px 8px;border-radius:9px;transition:.16s}
+  .tab:hover{color:var(--text)}
+  .tab.active{background:var(--surface-3);color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}
+
+  .pad{padding:20px}
+  .view{display:none}
+  .view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .field{margin-bottom:17px}
+  .field:last-child{margin-bottom:0}
+  label.lbl{display:block;font-size:11.5px;font-weight:700;color:var(--text-2);
+    text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+  .hint{font-size:11.5px;color:var(--text-3);margin-top:7px;line-height:1.45}
+  input[type=text],textarea,select{width:100%;font-family:inherit;font-size:14px;color:var(--text);
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:11px 13px;transition:.16s;resize:vertical}
+  input::placeholder,textarea::placeholder{color:var(--text-3)}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--g3);box-shadow:0 0 0 3px rgba(61,187,77,.13)}
+  textarea{min-height:84px;line-height:1.5}
+  select{appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%238da89a' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+  input[type=range]{padding:0;accent-color:var(--g2)}
+
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:fit-content;font-family:inherit;font-size:12.5px;font-weight:600;
+    color:var(--text-2);background:var(--surface-2);border:1px solid var(--border);
+    padding:9px 12px;border-radius:9px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .seg button:hover{color:var(--text);border-color:#36523f}
+  .seg button.sel{color:#08160c;background:var(--grad);border-color:transparent;font-weight:700}
+
+  .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .bg-opt{aspect-ratio:1.3;border-radius:10px;cursor:pointer;border:2px solid transparent;
+    position:relative;overflow:hidden;transition:.15s}
+  .bg-opt:hover{transform:translateY(-1px)}
+  .bg-opt.sel{border-color:var(--g2)}
+  .bg-opt span{position:absolute;left:7px;bottom:5px;font-size:9.5px;font-weight:700;
+    color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.6)}
+
+  .filebtn{display:inline-block;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+    border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .filebtn:hover{border-color:var(--g3)}
+  input[type=file]{display:none}
+  .link{background:none;border:0;color:var(--g1);font-size:12px;cursor:pointer;padding:0;margin-top:9px;font-family:inherit;display:inline-block}
+  .hide{display:none}
+
+  .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;font-family:inherit;
+    font-size:14px;font-weight:800;letter-spacing:.01em;cursor:pointer;padding:13px;border-radius:12px;border:none;transition:.16s}
+  .btn-grad{background:var(--grad);color:#08160c;box-shadow:0 8px 26px -10px rgba(61,187,77,.6)}
+  .btn-grad:hover{filter:brightness(1.05);transform:translateY(-1px)}
+  .btn-grad:disabled{opacity:.55;cursor:wait;transform:none;filter:none}
+  .btn-ghost{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--g3)}
+  .btn svg{width:17px;height:17px}
+  .btn-row{display:flex;gap:9px;margin-top:5px}
+  .btn-row .btn{font-size:13px;padding:11px}
+  .spin{width:16px;height:16px;border:2px solid rgba(8,22,12,.35);border-top-color:#08160c;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .pv-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border-soft)}
+  .pv-head .ttl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
+  .pv-size{font-size:11.5px;color:var(--text-3);font-variant-numeric:tabular-nums}
+  .canvas-stage{padding:22px;display:grid;place-items:center;background:repeating-conic-gradient(#0c120e 0% 25%,#0a0f0c 0% 50%) 0/22px 22px}
+  #cover{max-width:100%;height:auto;border-radius:8px;display:block;box-shadow:0 24px 60px -22px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.04)}
+  .pv-foot{padding:16px 20px;border-top:1px solid var(--border-soft)}
+
+  .post-card{margin-top:20px}
+  .post-out{background:var(--surface-2);border:1px solid var(--border-soft);border-radius:var(--radius);
+    padding:18px 20px;min-height:120px;font-size:14.5px;line-height:1.62;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+  .post-out.empty{color:var(--text-3);display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;min-height:160px}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .tag{font-size:12.5px;font-weight:600;color:var(--g1);background:rgba(61,187,77,.10);border:1px solid rgba(61,187,77,.22);padding:5px 10px;border-radius:8px}
+  .err{color:#ff9a9a;background:rgba(255,90,90,.08);border:1px solid rgba(255,90,90,.25);padding:12px 14px;border-radius:11px;font-size:13px;margin-top:14px;line-height:1.5}
+
+  .modal{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:rgba(4,8,5,.74);backdrop-filter:blur(6px);padding:20px}
+  .modal.show{display:grid}
+  .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px;width:100%;max-width:440px;animation:fade .2s}
+  .modal-card h3{font-size:17px;font-weight:800;margin-bottom:8px}
+  .modal-card p{font-size:13px;color:var(--text-2);line-height:1.55;margin-bottom:18px}
+  .modal-card a{color:var(--g1);text-decoration:none}
+  .modal-card a:hover{text-decoration:underline}
+  .credit{text-align:center;font-size:11.5px;color:var(--text-3);padding:0 20px 34px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 512 512"><defs><linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5fd96b"/><stop offset="100%" stop-color="#2f9a3e"/></linearGradient></defs>
+        <path d="M256 104C256 104 96 232 96 322 96 388 154 404 202 376 196 404 182 426 150 442L362 442C330 426 316 404 310 376 358 404 416 388 416 322 416 232 256 104 256 104Z" fill="url(#m)"/></svg>
+    </div>
+    <div class="brand-txt"><h1>PokerStock · Контент-студия</h1><p>Обложки и тексты</p></div>
+  </div>
+  <button class="key-btn" id="keyBtn" onclick="openKey()"><span class="dot"></span><span id="keyLabel">ИИ: встроенный</span></button>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="tabs">
+      <button class="tab active" data-tab="post" onclick="switchTab('post')">Текст поста</button>
+      <button class="tab" data-tab="cover" onclick="switchTab('cover')">Обложка</button>
+    </div>
+
+    <!-- POST -->
+    <div class="view active pad" id="view-post">
+      <div class="field">
+        <label class="lbl">Формат поста</label>
+        <select id="pillar">
+          <option value="spotlight">Club spotlight — разбор клуба/союза</option>
+          <option value="majors">Sunday Majors — подборка турниров</option>
+          <option value="platform">Платформа / новости</option>
+          <option value="jackpot">Джекпот / промо</option>
+          <option value="trust">Why us / Trust — доверие</option>
+          <option value="blog">Кросс-пост блога</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="lbl">Данные / о чём пост</label>
+        <textarea id="topic" placeholder="Дай конкретику: клуб FenixPC, NLH 1/2–5/10, рейк 30% потолок, прайм-тайм 20:00–01:00 МСК, бамхант ограничен. Или: турниры на вс — ClubGG Sunday 50K GTD, бай-ин $109, 19:00 МСК."></textarea>
+        <p class="hint">Бот пишет только из твоих данных — числа не выдумывает. Чем конкретнее ввод, тем точнее пост.</p>
+      </div>
+      <div class="field">
+        <label class="lbl">Площадка</label>
+        <div class="seg" id="platform">
+          <button class="sel" data-v="telegram">Telegram</button>
+          <button data-v="instagram">Instagram</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Тон</label>
+        <div class="seg" id="tone">
+          <button class="sel" data-v="спокойный авторитет, экспертно, без хайпа">Спокойный авторитет</button>
+          <button data-v="нейтрально-информативный, по делу">Информативный</button>
+          <button data-v="тёплый, человечный, но сдержанный">Тёплый</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Длина</label>
+        <div class="seg" id="length">
+          <button data-v="короткий (2–3 предложения)">Короткий</button>
+          <button class="sel" data-v="средний (800–1200 знаков)">Средний</button>
+          <button data-v="развёрнутый (1200–1600 знаков, с буллетами)">Развёрнутый</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Модель</label>
+        <div class="seg" id="model">
+          <button class="sel" data-v="claude-sonnet-4-6">Sonnet — качество</button>
+          <button data-v="claude-haiku-4-5-20251001">Haiku — быстрее</button>
+        </div>
+      </div>
+      <button class="btn btn-grad" id="genBtn" onclick="generatePost()">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18" stroke="#08160c" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Сгенерировать пост</span>
+      </button>
+    </div>
+
+    <!-- COVER -->
+    <div class="view pad" id="view-cover">
+      <div class="field">
+        <label class="lbl">Заголовок</label>
+        <textarea id="cTitle" oninput="renderCover()">ClubGG: рейкбек до 80%</textarea>
+      </div>
+      <div class="field">
+        <label class="lbl">Категория</label>
+        <select id="cat" onchange="onCat()">
+          <option value="tournaments">🏆 Турниры</option>
+          <option value="club" selected>❤️ Клуб</option>
+          <option value="platform">🎮 Платформа</option>
+          <option value="promo">💰 Промо / Джекпот</option>
+          <option value="guide">📌 Гайд</option>
+          <option value="news">🗞 Новости</option>
+          <option value="review">⭐ Обзор</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="lbl">Надпись-рубрика</label>
+        <input type="text" id="cEyebrow" oninput="renderCover()" value="Клуб">
+      </div>
+      <div class="field">
+        <label class="lbl">Подпись внизу</label>
+        <input type="text" id="cHandle" oninput="renderCover()" value="@pokerstock_official">
+      </div>
+      <div class="field">
+        <label class="lbl">Формат</label>
+        <div class="seg" id="ratio">
+          <button class="sel" data-w="1200" data-h="630">Telegram 1200×630</button>
+          <button data-w="1280" data-h="720">YouTube 16:9</button>
+          <button data-w="1080" data-h="1350">IG 4:5</button>
+          <button data-w="1080" data-h="1080">1:1</button>
+          <button data-w="1080" data-h="1920">9:16 · Stories/TikTok</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Картинка (необязательно)</label>
+        <label for="cFile" class="filebtn">Загрузить картинку</label>
+        <input type="file" id="cFile" accept="image/*">
+        <button class="link hide" id="removeImg" onclick="removeImg()">✕ убрать картинку</button>
+        <div id="layoutBox" class="hide" style="margin-top:12px">
+          <div class="seg" id="layout">
+            <button class="sel" data-v="panel">Фото + панель</button>
+            <button data-v="cover">Текст на фото</button>
+          </div>
+          <div id="coverCtl" class="hide" style="margin-top:12px">
+            <div class="seg" id="fit" style="margin-bottom:10px">
+              <button class="sel" data-v="cover">Заполнить</button>
+              <button data-v="contain">Целиком</button>
+            </div>
+            <label class="lbl" style="margin-top:6px">Положение ↔</label>
+            <input type="range" id="posx" min="0" max="100" value="70" oninput="state.posx=this.value/100;renderCover()" style="width:100%">
+            <label class="lbl" style="margin-top:8px">Положение ↕</label>
+            <input type="range" id="posy" min="0" max="100" value="50" oninput="state.posy=this.value/100;renderCover()" style="width:100%">
+            <label class="lbl" style="margin-top:8px">Затемнение</label>
+            <input type="range" id="grade" min="20" max="95" value="62" oninput="state.grade=this.value/100;renderCover()" style="width:100%">
+          </div>
+        </div>
+      </div>
+      <div class="field" id="bgField">
+        <label class="lbl">Фон (без картинки)</label>
+        <div class="bg-grid" id="bgGrid"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Шрифт заголовка</label>
+        <select id="cFont" onchange="state.font=this.value;renderCover()">
+          <option value="'Cormorant Garamond'" selected>Cormorant — бренд-антиква</option>
+          <option value="Manrope">Manrope — гротеск</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-col">
+    <div class="panel">
+      <div class="pv-head"><span class="ttl">Превью обложки</span><span class="pv-size" id="sizeLabel">1200 × 630</span></div>
+      <div class="canvas-stage"><canvas id="cover" width="1200" height="630"></canvas></div>
+      <div class="pv-foot">
+        <button class="btn btn-grad" onclick="downloadCover()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="#08160c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Скачать PNG</span>
+        </button>
+      </div>
+    </div>
+    <div class="post-card">
+      <div class="panel" style="background:transparent;border:none">
+        <div class="post-out empty" id="postOut">Здесь появится текст поста.<br>Заполни данные слева и нажми «Сгенерировать пост».</div>
+        <div id="tagsBox"></div>
+        <div class="btn-row" id="postActions" style="display:none">
+          <button class="btn btn-ghost" onclick="copyPost()">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="1.8"/></svg>
+            <span id="copyLabel">Скопировать</span>
+          </button>
+          <button class="btn btn-ghost" onclick="pushToCover()">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h13m0 0l-5-5m5 5l-5 5M20 4v16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>На обложку</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="credit">Один файл — работает локально и на любом хостинге. Картинки рендерятся в браузере, никуда не загружаются.</p>
+
+<div class="modal" id="keyModal">
+  <div class="modal-card">
+    <h3>Подключение ИИ</h3>
+    <input type="text" id="keyInput" placeholder="Ключ доступа" autocomplete="off" spellcheck="false" style="margin-top:4px">
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeKey()">Отмена</button>
+      <button class="btn btn-grad" onclick="saveKey()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SPADE="M256 104C256 104 96 232 96 322 96 388 154 404 202 376 196 404 182 426 150 442L362 442C330 426 316 404 310 376 358 404 416 388 416 322 416 232 256 104 256 104Z";
+const CATS={
+  tournaments:{accent:'#e0a93f',eyebrow:'Турниры'}, club:{accent:'#4dcb5d',eyebrow:'Клуб'},
+  platform:{accent:'#4db4cb',eyebrow:'Платформа'}, promo:{accent:'#e0a93f',eyebrow:'Промо'},
+  guide:{accent:'#4dcb5d',eyebrow:'Гайд'}, news:{accent:'#4db4cb',eyebrow:'Новости'}, review:{accent:'#e0a93f',eyebrow:'Обзор'}
+};
+const BACKGROUNDS=[
+  {name:'Тёмно-зелёный',stops:[[0,'#0b1c12'],[1,'#070d09']],angle:160},
+  {name:'Изумруд',stops:[[0,'#11271a'],[1,'#06100a']],angle:135},
+  {name:'Графит',stops:[[0,'#16231c'],[1,'#0a120d']],angle:140},
+  {name:'Глубокий',stops:[[0,'#0a140e'],[1,'#050907']],angle:120},
+];
+const state={pillar:'spotlight',platform:'telegram',tone:'спокойный авторитет, экспертно, без хайпа',
+  length:'средний (800–1200 знаков)',ratio:{w:1200,h:630},bg:0,cat:'club',font:"'Cormorant Garamond'",
+  img:null,layout:'panel',posx:0.7,posy:0.5,grade:0.62,model:'claude-sonnet-4-6',apiKey:''};
+
+/* bg picker */
+const bgGrid=document.getElementById('bgGrid');
+BACKGROUNDS.forEach((b,i)=>{const d=document.createElement('div');
+  d.className='bg-opt'+(i===0?' sel':'');
+  d.style.background=`linear-gradient(${b.angle}deg, ${b.stops[0][1]}, ${b.stops[1][1]})`;
+  d.innerHTML=`<span>${b.name}</span>`;
+  d.onclick=()=>{state.bg=i;[...bgGrid.children].forEach(c=>c.classList.remove('sel'));d.classList.add('sel');renderCover();};
+  bgGrid.appendChild(d);});
+
+/* segmented */
+function bindSeg(id,key,sub){document.querySelectorAll('#'+id+' button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
+    if(sub==='ratio'){state.ratio={w:+b.dataset.w,h:+b.dataset.h};onRatio();}
+    else if(sub==='layout'){state.layout=b.dataset.v;document.getElementById('coverCtl').classList.toggle('hide',b.dataset.v!=='cover');renderCover();}
+    else if(sub==='fit'){state.fit=b.dataset.v;document.getElementById('posx').parentElement.style.opacity=b.dataset.v==='contain'?'.4':'1';renderCover();}
+    else state[key]=b.dataset.v;};});}
+bindSeg('platform','platform');bindSeg('tone','tone');bindSeg('length','length');bindSeg('model','model');
+bindSeg('ratio',null,'ratio');bindSeg('layout',null,'layout');bindSeg('fit',null,'fit');
+document.getElementById('pillar').onchange=e=>state.pillar=e.target.value;
+state.fit='cover';
+
+function onRatio(){const c=document.getElementById('cover');c.width=state.ratio.w;c.height=state.ratio.h;
+  document.getElementById('sizeLabel').textContent=`${state.ratio.w} × ${state.ratio.h}`;renderCover();}
+function onCat(){const v=document.getElementById('cat').value;state.cat=v;
+  document.getElementById('cEyebrow').value=CATS[v].eyebrow;renderCover();}
+
+/* image upload */
+document.getElementById('cFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{state.img=im;
+    document.getElementById('layoutBox').classList.remove('hide');
+    document.getElementById('removeImg').classList.remove('hide');
+    document.getElementById('bgField').classList.add('hide');renderCover();};im.src=r.result;};
+  r.readAsDataURL(f);});
+function removeImg(){state.img=null;document.getElementById('cFile').value='';
+  document.getElementById('layoutBox').classList.add('hide');document.getElementById('coverCtl').classList.add('hide');
+  document.getElementById('removeImg').classList.add('hide');document.getElementById('bgField').classList.remove('hide');renderCover();}
+
+function switchTab(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+t).classList.add('active');}
+
+/* ---------- helpers ---------- */
+function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+function wrapLines(ctx,text,maxW){const words=text.split(/\s+/).filter(Boolean);const lines=[];let line='';
+  for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
+  if(line)lines.push(line);return lines;}
+function drawSpaced(ctx,text,x,y,spacing){let cx=x;for(const ch of text){ctx.fillText(ch,cx,y);cx+=ctx.measureText(ch).width+spacing;}}
+function spade(ctx,x,y,size,fill){ctx.save();ctx.translate(x,y);ctx.scale(size/512,size/512);
+  ctx.fillStyle=fill;ctx.fill(new Path2D(SPADE));ctx.restore();}
+
+function brandBg(ctx,W,H,A){
+  const bg=BACKGROUNDS[state.bg],rad=bg.angle*Math.PI/180,dx=Math.cos(rad),dy=Math.sin(rad);
+  const g=ctx.createLinearGradient(W/2-dx*W/2,H/2-dy*H/2,W/2+dx*W/2,H/2+dy*H/2);
+  bg.stops.forEach(s=>g.addColorStop(s[0],s[1]));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const gr=ctx.createRadialGradient(W*0.82,H*0.16,0,W*0.82,H*0.16,W*0.8);
+  gr.addColorStop(0,hexA(A,0.14));gr.addColorStop(1,hexA(A,0));ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+  const vg=ctx.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*0.9);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.40)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=0.02;for(let i=0;i<W*H/3000;i++){ctx.fillStyle=Math.random()>0.5?'#fff':'#000';ctx.fillRect(Math.random()*W,Math.random()*H,1.3,1.3);}ctx.globalAlpha=1;
+}
+function drawCoverImg(ctx,img,W,H){
+  const ir=img.width/img.height,cr=W/H;let sw,sh,sx,sy;
+  if(state.fit==='contain'){const s=Math.min(W/img.width,H/img.height);const w=img.width*s,h=img.height*s;
+    ctx.drawImage(img,(W-w)/2,(H-h)/2,w,h);}
+  else{if(ir>cr){sh=img.height;sw=sh*cr;sx=(img.width-sw)*state.posx;sy=0;}else{sw=img.width;sh=sw/cr;sx=0;sy=(img.height-sh)*state.posy;}
+    ctx.drawImage(img,sx,sy,sw,sh,0,0,W,H);}
+  // grade: overall darken + left wedge
+  const gd=ctx.createRadialGradient(W*0.68,H*0.48,H*0.3,W*0.68,H*0.48,W*0.95);
+  gd.addColorStop(0,'rgba(3,8,5,0)');gd.addColorStop(1,`rgba(3,8,5,${0.85*state.grade*1.3})`);ctx.fillStyle=gd;ctx.fillRect(0,0,W,H);
+  const wg=ctx.createLinearGradient(0,0,W*0.62,0);
+  wg.addColorStop(0,'rgba(4,10,6,.97)');wg.addColorStop(0.32,'rgba(4,10,6,.82)');wg.addColorStop(1,'rgba(4,10,6,0)');
+  ctx.fillStyle=wg;ctx.fillRect(0,0,W,H);
+}
+function drawPanelImg(ctx,img,W,H){
+  const boxX=W*0.40,boxW=W*0.60;const s=Math.min(boxW/img.width,H/img.height);
+  const w=img.width*s,h=img.height*s;const x=boxX+boxW-w,y=(H-h)/2;ctx.drawImage(img,x,y,w,h);
+  const pf=ctx.createLinearGradient(0,0,W,0);const dk='#07130d';
+  pf.addColorStop(0,dk);pf.addColorStop(0.33,dk);pf.addColorStop(0.55,'rgba(7,19,13,0)');
+  ctx.fillStyle=pf;ctx.fillRect(0,0,W,H);
+}
+
+function renderCover(){
+  const c=document.getElementById('cover'),ctx=c.getContext('2d'),W=c.width,H=c.height;
+  const A=CATS[state.cat].accent;
+  if(state.img&&state.layout==='cover'){drawCoverImg(ctx,state.img,W,H);}
+  else if(state.img&&state.layout==='panel'){brandBg(ctx,W,H,A);drawPanelImg(ctx,state.img,W,H);}
+  else{brandBg(ctx,W,H,A);}
+
+  const pad=W*0.063;
+  const landscape=H<=W;
+  const panel=state.img&&state.layout==='panel';
+  const maxW = panel ? W*0.40-pad*0.6 : (state.img&&state.layout==='cover' ? W*0.60 : (landscape? W*0.66 : W-pad*2));
+
+  // lockup
+  spade(ctx,pad,pad*0.82,W*0.046,'#4dcb5d');
+  ctx.font=`700 ${W*0.026}px Manrope`;ctx.fillStyle='#eef2ef';ctx.textBaseline='middle';
+  ctx.fillText('PokerStock',pad+W*0.058,pad*0.82+W*0.024);
+
+  // title autofit
+  const title=(document.getElementById('cTitle').value||'').trim();
+  const tf=state.font;let fs=landscape?W*0.078:W*0.082;const minFs=W*0.040;let lines=[];
+  while(fs>=minFs){ctx.font=`700 ${fs}px ${tf}`;lines=wrapLines(ctx,title,maxW);if(lines.length<=4)break;fs-=W*0.003;}
+  ctx.font=`700 ${fs}px ${tf}`;const lh=fs*1.02,blockH=lines.length*lh;
+  let ty = landscape ? H*0.60-blockH/2 : H-pad-H*0.085-blockH;
+  ty=Math.max(ty, pad+W*0.13);
+
+  // eyebrow + bar above title
+  const eb=(document.getElementById('cEyebrow').value||'').toUpperCase().trim();
+  if(eb){const ebFs=W*0.024;const ebY=ty-fs*0.46;
+    ctx.fillStyle=A;ctx.fillRect(pad,ebY-ebFs*1.5,W*0.06,Math.max(3,W*0.004));
+    ctx.font=`700 ${ebFs}px Manrope`;ctx.textBaseline='alphabetic';
+    drawSpaced(ctx,eb,pad,ebY,ebFs*0.34);}
+
+  // title
+  ctx.font=`700 ${fs}px ${tf}`;ctx.fillStyle='#f4f7f5';ctx.textBaseline='top';
+  lines.forEach((ln,i)=>ctx.fillText(ln,pad,ty+i*lh));
+
+  // handle
+  const handle=(document.getElementById('cHandle').value||'').trim();
+  if(handle){ctx.font=`600 ${W*0.022}px Manrope`;ctx.textBaseline='alphabetic';
+    ctx.fillStyle='rgba(180,200,186,0.85)';ctx.fillText(handle,pad,H-pad*0.7);}
+}
+
+function downloadCover(){const c=document.getElementById('cover');c.toBlob(b=>{const url=URL.createObjectURL(b);
+  const a=document.createElement('a');const t=(document.getElementById('cTitle').value||'cover').slice(0,30).replace(/[^\wа-яА-Я]+/g,'-');
+  a.href=url;a.download=`${state.cat}-${t||'cover'}-${state.ratio.w}x${state.ratio.h}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},'image/png');}
+
+/* ---------- AI POST ---------- */
+const PILLARS={
+  spotlight:'Club spotlight: разбор одного клуба/союза. Структура: лимиты, рейк, прайм-тайм, фишки и ограничения (бамхант, VPIP), краткий вывод. НЕ публикуй Club ID — веди на менеджера.',
+  majors:'Sunday Majors: подборка крупнейших воскресных MTT. Для каждого: платформа/клуб, GTD, бай-ин, время в двух зонах (МСК + UTC). Только числа из данных пользователя.',
+  platform:'Platform spotlight / новости: апдейт приложения или анонс серии. Что нового, когда стартует, кому полезно.',
+  jackpot:'Джекпот / промо: текущие BBJ-условия или промо. Конкретные суммы и условия из данных, без выдумок.',
+  trust:'Why us / Trust: как мы проверяем клубы, как устроен онбординг, анти-скам гарантии. Спокойно, по делу, без пафоса.',
+  blog:'Кросс-пост блога: вытащи 3 главных вывода из темы/статьи пользователя, в конце — «читать целиком» (ссылку оставит пользователь).'
+};
+function setBtn(loading){const b=document.getElementById('genBtn');b.disabled=loading;
+  b.innerHTML=loading?'<span class="spin"></span><span>Пишу…</span>'
+    :'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18" stroke="#08160c" stroke-width="2" stroke-linecap="round"/></svg><span>Сгенерировать пост</span>';}
+
+async function generatePost(){
+  const topic=document.getElementById('topic').value.trim();
+  const out=document.getElementById('postOut'),tags=document.getElementById('tagsBox'),actions=document.getElementById('postActions');
+  tags.innerHTML='';actions.style.display='none';
+  if(!topic){out.className='post-out';out.innerHTML='<span style="color:var(--text-3)">Сначала дай данные/тему поста.</span>';return;}
+  setBtn(true);out.className='post-out empty';out.textContent='Готовлю текст…';
+
+  const plat=state.platform==='instagram'
+    ? 'Instagram. Эмодзи в меру, дружелюбная вёрстка с переносами строк, в конце CTA и 3–5 уместных хэштега.'
+    : 'Telegram-канал. Лаконичные короткие абзацы, жирные акценты словами уместны, без хэштег-спама (0–3 хэштега).';
+
+  const sys=`Ты — контент-редактор покерного агентства PokerStock. Пишешь посты для соцсетей.
+
+ГОЛОС БРЕНДА: спокойный авторитет, экспертно, без хайпа. PokerStock — серьёзное агентство с глобальным охватом и игровой компетенцией, а не «ещё один канал с офферами».
+
+ЖЁСТКИЕ ПРАВИЛА (нарушать нельзя):
+- Никаких «гарантированных выигрышей», «выводит в плюс», «100% безопасно», «беги регайся пока есть места», реферального давления.
+- Флагман — ClubGG (если уместен в подборке — идёт первым). Без геотаргетинга под США/Францию. Уважительно к читателю, без давления.
+
+ПРОВЕРЕННЫЕ ФАКТЫ О PokerStock (используй свободно, когда уместно):
+50+ активных клубов · 10+ эксклюзивных сделок · рейкбек до 80% · поддержка 24/7 · нам доверяют 1000+ игроков · на рынке с 2019 года.
+Это факты про агентство в целом. КОНКРЕТИКУ по отдельному клубу/турниру (бай-ины, GTD, лимиты, рейк, прайм-тайм, время) бери ТОЛЬКО из данных пользователя — если её нет, не выдумывай: пиши обтекаемо или предложи уточнить у менеджера.
+
+ФОРМАТ: ${PILLARS[state.pillar]}
+ПЛОЩАДКА: ${plat}
+ТОН: ${state.tone}. ОБЪЁМ: ${state.length}.
+СТРУКТУРА: заголовок с эмодзи-иконкой раздела → суть (1–2 предложения) → детали буллетами → CTA.
+ЭМОДЗИ-НАВИГАЦИЯ: 🏆 турниры, ❤️ клуб, 🎮 платформа, 💰 джекпот/деньги, 📌 важно, 📩 CTA.
+CTA всегда в конце: «📩 Заявка и вопросы — @pkrstock».
+
+Верни ТОЛЬКО валидный JSON без markdown и пояснений:
+{"coverTitle":"короткий заголовок для обложки до 50 знаков","coverEyebrow":"рубрика 1-2 слова","postText":"готовый текст поста с переносами строк и CTA","hashtags":["тег1","тег2"]}
+hashtags — без символа #. Текст самодостаточный, без плейсхолдеров в скобках.`;
+
+  try{
+    const headers={'Content-Type':'application/json'};
+    if(state.apiKey){headers['x-api-key']=state.apiKey;headers['anthropic-version']='2023-06-01';headers['anthropic-dangerous-direct-browser-access']='true';}
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,
+      body:JSON.stringify({model:state.model,max_tokens:1400,system:sys,messages:[{role:'user',content:'Данные: '+topic}]})});
+    if(!res.ok){const t=await res.text();throw new Error(res.status+' '+t.slice(0,180));}
+    const data=await res.json();
+    const raw=data.content.filter(i=>i.type==='text').map(i=>i.text).join('').trim();
+    const clean=raw.replace(/```json|```/g,'').trim();
+    let obj;try{obj=JSON.parse(clean);}catch{const m=clean.match(/\{[\s\S]*\}/);obj=m?JSON.parse(m[0]):{postText:clean,hashtags:[]};}
+    out.className='post-out';out.textContent=obj.postText||clean;
+    if(Array.isArray(obj.hashtags)&&obj.hashtags.length)
+      tags.innerHTML='<div class="tags">'+obj.hashtags.map(t=>`<span class="tag">#${String(t).replace(/^#/,'')}</span>`).join('')+'</div>';
+    actions.style.display='flex';
+    state.suggestTitle=obj.coverTitle||'';state.suggestEyebrow=obj.coverEyebrow||'';
+  }catch(e){out.className='post-out';
+    out.innerHTML=`<div class="err"><b>Не получилось сгенерировать.</b><br>${escapeHtml(e.message)}<br><br>Если файл открыт не на claude.ai — нажми «ИИ» вверху и вставь ключ доступа.</div>`;
+  }finally{setBtn(false);}
+}
+function escapeHtml(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function copyPost(){navigator.clipboard.writeText(document.getElementById('postOut').textContent).then(()=>{
+  const l=document.getElementById('copyLabel'),o=l.textContent;l.textContent='Скопировано ✓';setTimeout(()=>l.textContent=o,1400);});}
+function pushToCover(){if(state.suggestTitle)document.getElementById('cTitle').value=state.suggestTitle;
+  if(state.suggestEyebrow)document.getElementById('cEyebrow').value=state.suggestEyebrow;switchTab('cover');renderCover();}
+
+/* key modal */
+function openKey(){document.getElementById('keyInput').value=state.apiKey;document.getElementById('keyModal').classList.add('show');}
+function closeKey(){document.getElementById('keyModal').classList.remove('show');}
+function saveKey(){state.apiKey=document.getElementById('keyInput').value.trim();
+  const btn=document.getElementById('keyBtn'),lbl=document.getElementById('keyLabel');
+  if(state.apiKey){btn.classList.add('on');lbl.textContent='ИИ: свой ключ';}else{btn.classList.remove('on');lbl.textContent='ИИ: встроенный';}closeKey();}
+document.getElementById('keyModal').addEventListener('click',e=>{if(e.target.id==='keyModal')closeKey();});
+
+/* init */
+function init(){onRatio();renderCover();}
+if(document.fonts&&document.fonts.ready){
+  Promise.all([document.fonts.load('700 100px "Cormorant Garamond"'),document.fonts.load('700 100px Manrope')]).then(init).catch(init);
+  document.fonts.ready.then(renderCover);
+}else init();
+</script>
+</body>
+</html>
