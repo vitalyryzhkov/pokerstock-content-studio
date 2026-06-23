@@ -88,6 +88,12 @@
   .bg-opt span{position:absolute;left:7px;bottom:5px;font-size:9.5px;font-weight:700;
     color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.6)}
 
+  .acc-grid{display:flex;flex-wrap:wrap;gap:9px}
+  .acc-opt{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid var(--border);
+    transition:.15s;position:relative}
+  .acc-opt:hover{transform:translateY(-1px)}
+  .acc-opt.sel{border-color:var(--text);outline:2px solid var(--text);outline-offset:2px}
+
   .filebtn{display:inline-block;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
     border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer}
   .filebtn:hover{border-color:var(--g3)}
@@ -230,6 +236,11 @@
         <input type="text" id="cEyebrow" oninput="renderCover()" value="Клуб">
       </div>
       <div class="field">
+        <label class="lbl">Цвет рубрики</label>
+        <div class="acc-grid" id="accGrid"></div>
+        <p class="hint">По умолчанию — цвет категории. Можно задать любой вручную.</p>
+      </div>
+      <div class="field">
         <label class="lbl">Подпись внизу</label>
         <input type="text" id="cHandle" oninput="renderCover()" value="@pokerstock_official">
       </div>
@@ -334,12 +345,16 @@ const CATS={
 const BACKGROUNDS=[
   {name:'Тёмно-зелёный',stops:[[0,'#0b1c12'],[1,'#070d09']],angle:160},
   {name:'Изумруд',stops:[[0,'#11271a'],[1,'#06100a']],angle:135},
+  {name:'Лес',stops:[[0,'#0e2415'],[1,'#060f09']],angle:150},
+  {name:'Хвоя',stops:[[0,'#13301e'],[1,'#07120b']],angle:135},
+  {name:'Малахит',stops:[[0,'#0c2417'],[1,'#04100a']],angle:120},
   {name:'Графит',stops:[[0,'#16231c'],[1,'#0a120d']],angle:140},
+  {name:'Болото',stops:[[0,'#142318'],[1,'#080f0b']],angle:150},
   {name:'Глубокий',stops:[[0,'#0a140e'],[1,'#050907']],angle:120},
 ];
 const state={pillar:'spotlight',platform:'telegram',tone:'спокойный авторитет, экспертно, без хайпа',
   length:'средний (800–1200 знаков)',ratio:{w:1200,h:630},bg:0,cat:'club',font:"'Cormorant Garamond'",
-  img:null,layout:'panel',posx:0.7,posy:0.5,grade:0.62,model:'claude-sonnet-4-6',apiKey:''};
+  img:null,layout:'panel',posx:0.7,posy:0.5,grade:0.62,model:'claude-sonnet-4-6',apiKey:'',accent:null,hashtags:[]};
 
 /* bg picker */
 const bgGrid=document.getElementById('bgGrid');
@@ -349,6 +364,21 @@ BACKGROUNDS.forEach((b,i)=>{const d=document.createElement('div');
   d.innerHTML=`<span>${b.name}</span>`;
   d.onclick=()=>{state.bg=i;[...bgGrid.children].forEach(c=>c.classList.remove('sel'));d.classList.add('sel');renderCover();};
   bgGrid.appendChild(d);});
+
+/* accent (rubric colour) picker */
+const ACCENTS=[
+  {c:'#4dcb5d',n:'Зелёный'},{c:'#5fd96b',n:'Светлый'},{c:'#3dbb4d',n:'Бренд'},
+  {c:'#2f9a3e',n:'Тёмный'},{c:'#7be08a',n:'Мята'},{c:'#e0a93f',n:'Золото'},{c:'#4db4cb',n:'Циан'}
+];
+function curAccent(){return state.accent||CATS[state.cat].accent;}
+const accGrid=document.getElementById('accGrid');
+function markAccent(){const cur=curAccent().toLowerCase();
+  [...accGrid.children].forEach(x=>x.classList.toggle('sel',(x.dataset.c||'').toLowerCase()===cur));}
+ACCENTS.forEach(a=>{const d=document.createElement('div');d.className='acc-opt';
+  d.style.background=a.c;d.title=a.n;d.dataset.c=a.c;
+  d.onclick=()=>{state.accent=a.c;markAccent();renderCover();};
+  accGrid.appendChild(d);});
+markAccent();
 
 /* segmented */
 function bindSeg(id,key,sub){document.querySelectorAll('#'+id+' button').forEach(b=>{
@@ -364,8 +394,8 @@ state.fit='cover';
 
 function onRatio(){const c=document.getElementById('cover');c.width=state.ratio.w;c.height=state.ratio.h;
   document.getElementById('sizeLabel').textContent=`${state.ratio.w} × ${state.ratio.h}`;renderCover();}
-function onCat(){const v=document.getElementById('cat').value;state.cat=v;
-  document.getElementById('cEyebrow').value=CATS[v].eyebrow;renderCover();}
+function onCat(){const v=document.getElementById('cat').value;state.cat=v;state.accent=null;
+  document.getElementById('cEyebrow').value=CATS[v].eyebrow;markAccent();renderCover();}
 
 /* image upload */
 document.getElementById('cFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
@@ -423,7 +453,7 @@ function drawPanelImg(ctx,img,W,H){
 
 function renderCover(){
   const c=document.getElementById('cover'),ctx=c.getContext('2d'),W=c.width,H=c.height;
-  const A=CATS[state.cat].accent;
+  const A=curAccent();
   if(state.img&&state.layout==='cover'){drawCoverImg(ctx,state.img,W,H);}
   else if(state.img&&state.layout==='panel'){brandBg(ctx,W,H,A);drawPanelImg(ctx,state.img,W,H);}
   else{brandBg(ctx,W,H,A);}
@@ -483,7 +513,7 @@ function setBtn(loading){const b=document.getElementById('genBtn');b.disabled=lo
 async function generatePost(){
   const topic=document.getElementById('topic').value.trim();
   const out=document.getElementById('postOut'),tags=document.getElementById('tagsBox'),actions=document.getElementById('postActions');
-  tags.innerHTML='';actions.style.display='none';
+  tags.innerHTML='';actions.style.display='none';state.hashtags=[];
   if(!topic){out.className='post-out';out.innerHTML='<span style="color:var(--text-3)">Сначала дай данные/тему поста.</span>';return;}
   setBtn(true);out.className='post-out empty';out.textContent='Готовлю текст…';
 
@@ -518,15 +548,20 @@ hashtags — без символа #. Текст самодостаточный,
     const headers={'Content-Type':'application/json'};
     if(state.apiKey){headers['x-api-key']=state.apiKey;headers['anthropic-version']='2023-06-01';headers['anthropic-dangerous-direct-browser-access']='true';}
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,
-      body:JSON.stringify({model:state.model,max_tokens:1400,system:sys,messages:[{role:'user',content:'Данные: '+topic}]})});
+      body:JSON.stringify({model:state.model,max_tokens:2200,system:sys,messages:[{role:'user',content:'Данные: '+topic}]})});
     if(!res.ok){const t=await res.text();throw new Error(res.status+' '+t.slice(0,180));}
     const data=await res.json();
     const raw=data.content.filter(i=>i.type==='text').map(i=>i.text).join('').trim();
     const clean=raw.replace(/```json|```/g,'').trim();
-    let obj;try{obj=JSON.parse(clean);}catch{const m=clean.match(/\{[\s\S]*\}/);obj=m?JSON.parse(m[0]):{postText:clean,hashtags:[]};}
+    let obj;
+    try{obj=JSON.parse(clean);}
+    catch{const m=clean.match(/\{[\s\S]*\}/);
+      if(m){try{obj=JSON.parse(m[0]);}catch{obj=salvageJSON(clean);}}
+      else obj=salvageJSON(clean);}
     out.className='post-out';out.textContent=obj.postText||clean;
-    if(Array.isArray(obj.hashtags)&&obj.hashtags.length)
-      tags.innerHTML='<div class="tags">'+obj.hashtags.map(t=>`<span class="tag">#${String(t).replace(/^#/,'')}</span>`).join('')+'</div>';
+    if(Array.isArray(obj.hashtags)&&obj.hashtags.length){
+      state.hashtags=obj.hashtags.map(t=>'#'+String(t).replace(/^#/,''));
+      tags.innerHTML='<div class="tags">'+state.hashtags.map(t=>`<span class="tag">${t}</span>`).join('')+'</div>';}
     actions.style.display='flex';
     state.suggestTitle=obj.coverTitle||'';state.suggestEyebrow=obj.coverEyebrow||'';
   }catch(e){out.className='post-out';
@@ -534,7 +569,16 @@ hashtags — без символа #. Текст самодостаточный,
   }finally{setBtn(false);}
 }
 function escapeHtml(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
-function copyPost(){navigator.clipboard.writeText(document.getElementById('postOut').textContent).then(()=>{
+function salvageJSON(s){
+  const un=v=>{try{return JSON.parse('"'+v+'"');}catch{return v.replace(/\\n/g,'\n').replace(/\\"/g,'"');}};
+  const grab=k=>{const m=s.match(new RegExp('"'+k+'"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"'));return m?un(m[1]):'';};
+  let tags=[];const tg=s.match(/"hashtags"\s*:\s*\[([^\]]*)\]/);
+  if(tg){tags=(tg[1].match(/"((?:[^"\\]|\\.)*)"/g)||[]).map(x=>un(x.slice(1,-1)));}
+  return {coverTitle:grab('coverTitle'),coverEyebrow:grab('coverEyebrow'),
+    postText:grab('postText')||s,hashtags:tags};}
+function copyPost(){let txt=document.getElementById('postOut').textContent;
+  if(state.hashtags&&state.hashtags.length)txt+='\n\n'+state.hashtags.join(' ');
+  navigator.clipboard.writeText(txt).then(()=>{
   const l=document.getElementById('copyLabel'),o=l.textContent;l.textContent='Скопировано ✓';setTimeout(()=>l.textContent=o,1400);});}
 function pushToCover(){if(state.suggestTitle)document.getElementById('cTitle').value=state.suggestTitle;
   if(state.suggestEyebrow)document.getElementById('cEyebrow').value=state.suggestEyebrow;switchTab('cover');renderCover();}
