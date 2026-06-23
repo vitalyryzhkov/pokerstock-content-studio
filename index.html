@@ -136,6 +136,9 @@
   .modal-card p{font-size:13px;color:var(--text-2);line-height:1.55;margin-bottom:18px}
   .modal-card a{color:var(--g1);text-decoration:none}
   .modal-card a:hover{text-decoration:underline}
+  .remember{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-2);
+    margin-top:13px;cursor:pointer;user-select:none}
+  .remember input{width:16px;height:16px;accent-color:var(--g2);cursor:pointer}
   .credit{text-align:center;font-size:11.5px;color:var(--text-3);padding:0 20px 34px}
 </style>
 </head>
@@ -327,7 +330,9 @@
 <div class="modal" id="keyModal">
   <div class="modal-card">
     <h3>Подключение ИИ</h3>
+    <p>Ключ используется только для запросов к Anthropic с этого устройства и больше никуда не передаётся.</p>
     <input type="text" id="keyInput" placeholder="Ключ доступа" autocomplete="off" spellcheck="false" style="margin-top:4px">
+    <label class="remember"><input type="checkbox" id="rememberKey"> Запомнить ключ на этом устройстве</label>
     <div class="btn-row" style="margin-top:16px">
       <button class="btn btn-ghost" onclick="closeKey()">Отмена</button>
       <button class="btn btn-grad" onclick="saveKey()">Сохранить</button>
@@ -584,15 +589,26 @@ function pushToCover(){if(state.suggestTitle)document.getElementById('cTitle').v
   if(state.suggestEyebrow)document.getElementById('cEyebrow').value=state.suggestEyebrow;switchTab('cover');renderCover();}
 
 /* key modal */
-function openKey(){document.getElementById('keyInput').value=state.apiKey;document.getElementById('keyModal').classList.add('show');}
+const KEY_LS='ps_apiKey';
+function lsGet(k){try{return localStorage.getItem(k);}catch{return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch{}}
+function lsDel(k){try{localStorage.removeItem(k);}catch{}}
+function loadKey(){const saved=lsGet(KEY_LS);if(!saved)return;
+  state.apiKey=saved;document.getElementById('keyBtn').classList.add('on');
+  document.getElementById('keyLabel').textContent='ИИ: свой ключ';}
+function openKey(){document.getElementById('keyInput').value=state.apiKey;
+  document.getElementById('rememberKey').checked=!!lsGet(KEY_LS);
+  document.getElementById('keyModal').classList.add('show');}
 function closeKey(){document.getElementById('keyModal').classList.remove('show');}
 function saveKey(){state.apiKey=document.getElementById('keyInput').value.trim();
+  const remember=document.getElementById('rememberKey').checked;
+  if(state.apiKey&&remember)lsSet(KEY_LS,state.apiKey);else lsDel(KEY_LS);
   const btn=document.getElementById('keyBtn'),lbl=document.getElementById('keyLabel');
   if(state.apiKey){btn.classList.add('on');lbl.textContent='ИИ: свой ключ';}else{btn.classList.remove('on');lbl.textContent='ИИ: встроенный';}closeKey();}
 document.getElementById('keyModal').addEventListener('click',e=>{if(e.target.id==='keyModal')closeKey();});
 
 /* init */
-function init(){onRatio();renderCover();}
+function init(){loadKey();onRatio();renderCover();}
 if(document.fonts&&document.fonts.ready){
   Promise.all([document.fonts.load('700 100px "Cormorant Garamond"'),document.fonts.load('700 100px Manrope')]).then(init).catch(init);
   document.fonts.ready.then(renderCover);
